@@ -13,9 +13,7 @@ image:
         content:
           type: files
           files:
-            - prebuilt/Image
-            - prebuilt/*.dtb
-            - build/initrd.img
+            - prebuilt/*
       size: 256 MB
 
     - name: root

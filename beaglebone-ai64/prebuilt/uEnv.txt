@@ -1,0 +1,2 @@
+bootargs=console=ttyS2,115200n8 root=/dev/mmcblk0p2 rw rootfstype=ext4
+bootcmd=load mmc 0:1 0x80007fc0 /zImage; load mmc 0:1 0x82000000 /am64xx-evm.dtb; bootz 0x80007fc0 - 0x82000000
