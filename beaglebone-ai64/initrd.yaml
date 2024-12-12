@@ -1,8 +1,6 @@
 # Derive values from base.yaml - relative path
 base: base.yaml
+# Reset the kernel value - we don't want to download and extract it
+kernel: null
 # Root device to mount
-root_device: /dev/vda1
-# List of kernel modules
-modules:
-  - kernel/drivers/block/virtio_blk.ko # virtio_blk is needed for QEMU
-  - kernel/fs/autofs/autofs4.ko # Wanted by systemd
+root_device: /dev/sda2

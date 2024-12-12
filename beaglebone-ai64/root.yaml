@@ -1,14 +1,42 @@
 base: base.yaml
 # reset the kernel value
 kernel: null
-# Name of the archive.
-name: ubuntu
 # Packages to install in the root tarball
 packages:
+  - kmod # requried to load modules
   - systemd
-  - udev        # udev will create the device node for ttyS0
+  - systemd-timesyncd
+  - systemd-coredump
+  - udev
+  - dbus
+  # network helpers
+  - iproute2
+  - iputils-ping
+  # SSH server
+  - openssh-server
+  # Other basic tools
+  - openssh-client
+  - locales
+  - bash
   - util-linux
+  - cron
+  - file
+  - findutils
+  - iproute2
+  - iptables
+  - iputils-ping
+  # Apt package manager
+  - apt
+  - gnupg
+  # Editors
+  - vim
+  - nano
+  # network tools
+  - wget
+  - curl
+  - python3
 # Scripts to configure the root tarball
+
 scripts:
   - name: config_root.sh # Name of the script, relative path to this file
     env: chroot # Type of execution environment
