@@ -1,3 +1,4 @@
 [submodule "linux"]
 	path = linux
 	url = https://github.com/beagleboard/linux.git
+    branch = v6.6.32-ti-arm64-r10
