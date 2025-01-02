@@ -11,17 +11,8 @@ image:
       content:
         type: fat32
         content:
-          type: files
-          files:
-            - boot/*
-            - build/Image
-            - build/dtbs/*
-            - build/dtbs/ti/k3*
-            - build/initrd.img
-            - build/deploy/sysfw.itb
-            - build/deploy/tispl.bin
-            - build/deploy/u-boot.img
-            - build/deploy/tiboot3.bin
+          type: archive
+          archive: build/boot.tar
       size: 256 MB
 
     - name: root

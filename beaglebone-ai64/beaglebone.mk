@@ -71,6 +71,14 @@ initrd_img ?= $(result_folder)/initrd.img
 sysroot_tarball ?= $(result_folder)/root_sysroot.tar
 
 
+boot_root_spec ?= build_tools/boot_root.yaml
+
+boot_root ?= $(result_folder)/boot_root.tar
+
+boot_extract_spec ?= build_tools/boot_extract.yaml
+
+boot_contents = $(result_folder)/boot.tar
+
 # Embdgen is used to build the SD card image.
 $(disc_image): $(initrd_img) $(root_tarball) $(partition_layout)
 	@echo "Build image..."
@@ -85,7 +93,8 @@ $(disc_image): $(initrd_img) $(root_tarball) $(partition_layout)
 # is done as a second step, because the build of this tarball is quite 
 # time consuming and configuration is fast. This is an optimization for 
 # the image development process.
-$(base_tarball): $(root_filesystem_spec) kernel_beagle_build
+# TODO kernel_beagle_build
+$(base_tarball): $(root_filesystem_spec) $(boot_contents)
 	@echo "Build root.tar..."
 	mkdir -p $(result_folder)
 	set -o pipefail && root_generator --no-config $(root_filesystem_spec) $(result_folder) 2>&1 | tee $(base_tarball).log
@@ -115,6 +124,21 @@ $(sysroot_tarball): $(root_filesystem_spec)
 	mkdir -p $(result_folder)
 	set -o pipefail && root_generator --sysroot --no-config $(root_filesystem_spec) $(result_folder) 2>&1 | tee $(sysroot_tarball).log
 
+
+# The root generator is used to build a chroot enviroment which contains all tools for building the fitimage.
+# boot_root_spec: specification of the fitimage build environment
+#
+# A separate image build is used for the fitimage build environment, to not bloat the
+# root filesystem with this stuff.
+$(boot_root): $(boot_root_spec)
+	@echo "Build $(boot_root) from $(boot_root_spec)..."
+	mkdir -p $(result_folder)
+	set -o pipefail && root_generator --no-config $(boot_root_spec) $(result_folder) 2>&1 | tee $(boot_root).log
+
+$(boot_contents): $(boot_extract_spec) $(boot_root)
+	@echo "Extracting required files from boot_root ..."
+	mkdir -p $(result_folder)
+	set -o pipefail && boot_generator $(boot_extract_spec) $(result_folder) 2>&1 | tee $(boot_contents).log
 #--------------------------------------
 # Open a shell for manual configuration
 #--------------------------------------

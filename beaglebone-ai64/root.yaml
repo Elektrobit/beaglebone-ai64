@@ -44,13 +44,8 @@ host_files:
     uid: 0
     gid: 0
     mode: 755
-  - source: app/*
-    uid: 0
-    gid: 0
-    mode: 755
-    destination: bin
-  - source: $$RESULTS$$/lib/*
-    destination: lib
+#  - source: $$RESULTS$$/lib/*
+#    destination: lib
 scripts:
   - name: config_root.sh # Name of the script, relative path to this file
     env: chroot # Type of execution environment
