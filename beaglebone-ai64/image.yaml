@@ -13,7 +13,15 @@ image:
         content:
           type: files
           files:
-            - prebuilt/*
+            - boot/*
+            - build/Image
+            - build/dtbs/*
+            - build/dtbs/ti/k3*
+            - build/initrd.img
+            - build/deploy/sysfw.itb
+            - build/deploy/tispl.bin
+            - build/deploy/u-boot.img
+            - build/deploy/tiboot3.bin
       size: 256 MB
 
     - name: root

@@ -46,17 +46,11 @@ kernel_result_folder ?= ./build
 kernel_prebuilt_folder ?= ./prebuilt
 
 # Kernel image
-kernel = $(kernel_prebuilt_folder)/vmlinuz
-# Kernel modules
-modules = $(kernel_result_folder)/lib
-# Kernel config
-# kconfig = $(kernel_result_folder)/config
-# Kernel source
-# kernel_source = kernel_src
+kernel = $(result_folder)/Image
 # Path of the kernel sources
-# kernel_dir = $(kernel_source)/linux-imx
+kernel_dir = ../linux
 # Kernel make arguments
-# kernel_make_args = ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+kernel_make_args = ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
 
 # The ifeqs allow overwriting the values
 # if the makefile is used as include.
@@ -75,6 +69,7 @@ initrd_img ?= $(result_folder)/initrd.img
 
 # Sysroot tarball
 sysroot_tarball ?= $(result_folder)/root_sysroot.tar
+
 
 # Embdgen is used to build the SD card image.
 $(disc_image): $(initrd_img) $(root_tarball) $(partition_layout)
@@ -154,31 +149,33 @@ edit_root:
 
 .PHONY: kernel_beagle_build
 kernel_beagle_build:
-	@echo "Nothing To see Here Yet"
-#	mkdir -p $(kernel_source)
-#   Clone kernel source from linux-imx that supports imx95
-#	cd $(kernel_source) && git clone --depth=1 "https://github.com/nxp-imx/linux-imx" -b "lf-6.6.23-2.0.0" || true
-#	cd $(kernel_dir) && chmod +x scripts/*
-#	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 imx_v8_defconfig
+#   Clone kernel source tracked by submodule
+	git submodule update --remote --init --recursive
+	cd $(kernel_dir) && chmod +x scripts/*
+	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 bb.org_defconfig
 ##   Image Build
-#	@echo "Build kernel binary..."
-#	mkdir -p $(result_folder)
-#	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 Image
-#	cp $(kernel_dir)/arch/arm64/boot/Image $(kernel)
-#	@echo "Results were written to $(kernel)"
+	@echo "Build kernel binary..."
+	mkdir -p $(result_folder)
+	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 Image
+	cp $(kernel_dir)/arch/arm64/boot/Image $(kernel)
+	@echo "Results were written to $(kernel)"
 ##   modules Build
-#	mkdir -p $(result_folder)
-#	@echo "Build kernel modules..."
-#	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 modules
-#	cd $(kernel_dir) && INSTALL_MOD_PATH=../../$(result_folder) $(MAKE) $(kernel_make_args) modules_install
-#	@echo "Results were written to $(kernel)"
+	mkdir -p $(result_folder)
+	@echo "Build kernel modules..."
+	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 modules
+	cd $(kernel_dir) && INSTALL_MOD_PATH=../beaglebone-ai64/$(result_folder) $(MAKE) $(kernel_make_args) modules_install
+	@echo "Results were written to $(result_folder)"
 ##   Dtbs compile
-#	mkdir -p $(result_folder)/dtbs
-#	@echo "Build dtbs .."
-#	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 dtbs
-#	cp $(kernel_dir)/arch/arm64/boot/dts/freescale/imx95-19x19-verdin-lt8912.dtb  $(result_folder)/dtbs
-#	@echo "Results were written to $(kernel)/dtbs"
-#	cd -
+	mkdir -p $(result_folder)/dtbs/ti
+	mkdir -p $(result_folder)/dtbs/overlays
+	@echo "Build dtbs .."
+	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 dtbs
+	cp $(kernel_dir)/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dtb  $(result_folder)/dtbs/ti
+	cp $(kernel_dir)/arch/arm64/boot/dts/ti/k3-*.dtbo  $(result_folder)/dtbs/overlays
+	@echo "Results were written to $(result_folder)/dtbs"
+	cd -
+## 	Run Build SD
+	build_tools/prepare_sd.sh $(result_folder) | tee $(result_folder)/mybuildtool.log
 #--------------------------------
 # Default make targets for images
 #--------------------------------
@@ -214,3 +211,4 @@ sysroot_install: $(sysroot_tarball)
 .PHONY: clean
 clean:
 	rm -rf $(result_folder)
+	sync -f
