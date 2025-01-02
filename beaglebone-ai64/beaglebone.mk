@@ -77,7 +77,15 @@ boot_root ?= $(result_folder)/boot_root.tar
 
 boot_extract_spec ?= build_tools/boot_extract.yaml
 
-boot_contents = $(result_folder)/boot.tar
+boot_contents ?= $(result_folder)/boot.tar
+
+beaglebone_repo_key ?= $(result_folder)/bbbio.gpg
+beaglebone_repo_key_src ?= $(result_folder)/bbbio.asc
+
+$(beaglebone_repo_key): 
+	@echo "Downloading BeagleBone Repo Key"
+	wget -O $(beaglebone_repo_key_src) "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xd284e608a4c46402"
+	gpg --dearmor -o $(beaglebone_repo_key) $(beaglebone_repo_key_src)
 
 # Embdgen is used to build the SD card image.
 $(disc_image): $(initrd_img) $(root_tarball) $(partition_layout)
@@ -103,7 +111,7 @@ $(base_tarball): $(root_filesystem_spec) $(boot_contents)
 # as a separate step in the build process.
 # base_tarball: tarball which is configured
 # config_root: the used configuration script
-$(root_tarball): $(base_tarball) $(config_root)
+$(root_tarball): $(base_tarball) $(config_root) $(beaglebone_repo_key)
 	@echo "Configuring ${base_tarball} as ${root_tarball}..."
 	mkdir -p $(result_folder)
 	set -o pipefail && root_configurator $(root_filesystem_spec) $(base_tarball) $(root_tarball) 2>&1 | tee $(root_tarball).log
@@ -130,12 +138,12 @@ $(sysroot_tarball): $(root_filesystem_spec)
 #
 # A separate image build is used for the fitimage build environment, to not bloat the
 # root filesystem with this stuff.
-$(boot_root): $(boot_root_spec)
+$(boot_root): $(boot_root_spec) $(beaglebone_repo_key)
 	@echo "Build $(boot_root) from $(boot_root_spec)..."
 	mkdir -p $(result_folder)
 	set -o pipefail && root_generator --no-config $(boot_root_spec) $(result_folder) 2>&1 | tee $(boot_root).log
 
-$(boot_contents): $(boot_extract_spec) $(boot_root)
+$(boot_contents): $(boot_extract_spec) $(boot_root) $(initrd_img)
 	@echo "Extracting required files from boot_root ..."
 	mkdir -p $(result_folder)
 	set -o pipefail && boot_generator $(boot_extract_spec) $(result_folder) 2>&1 | tee $(boot_contents).log

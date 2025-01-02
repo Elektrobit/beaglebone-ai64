@@ -8,12 +8,14 @@ tar: true
 use_packages: false
 # Name of the boot root archive
 base_tarball: $$RESULTS$$/boot_root.tar
+host_files:
+  - source: $$RESULTS$$/initrd.img 
 files:
   - opt/u-boot/bb-u-boot-beagleboneai64/sysfw.itb
   - opt/u-boot/bb-u-boot-beagleboneai64/tiboot3.bin
   - opt/u-boot/bb-u-boot-beagleboneai64/tispl.bin
   - opt/u-boot/bb-u-boot-beagleboneai64/u-boot.img
-  - boot/dtbs/*/*/k3-j721e-beagleboneai64.dtb
+  - initrd.img
   - outdir/*
 
 scripts:
