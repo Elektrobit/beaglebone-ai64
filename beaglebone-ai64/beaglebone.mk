@@ -1,4 +1,4 @@
-# Makefile for IMX95 
+# Makefile for BeagleBone AI64 
 
 # Arch for sysroot extraction
 arch ?= aarch64
@@ -179,35 +179,6 @@ edit_root:
 	cd $(result_folder)/root && fakeroot -i ../fakedit -s ../fakedit -- tar cf ../../$(root_tarball) .
 	rm -rf $(result_folder)/root
 
-.PHONY: kernel_beagle_build
-kernel_beagle_build:
-#   Clone kernel source tracked by submodule
-	git submodule update --remote --init --recursive
-	cd $(kernel_dir) && chmod +x scripts/*
-	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 bb.org_defconfig
-##   Image Build
-	@echo "Build kernel binary..."
-	mkdir -p $(result_folder)
-	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 Image
-	cp $(kernel_dir)/arch/arm64/boot/Image $(kernel)
-	@echo "Results were written to $(kernel)"
-##   modules Build
-	mkdir -p $(result_folder)
-	@echo "Build kernel modules..."
-	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 modules
-	cd $(kernel_dir) && INSTALL_MOD_PATH=../beaglebone-ai64/$(result_folder) $(MAKE) $(kernel_make_args) modules_install
-	@echo "Results were written to $(result_folder)"
-##   Dtbs compile
-	mkdir -p $(result_folder)/dtbs/ti
-	mkdir -p $(result_folder)/dtbs/overlays
-	@echo "Build dtbs .."
-	cd $(kernel_dir) && $(MAKE) $(kernel_make_args) -j 16 dtbs
-	cp $(kernel_dir)/arch/arm64/boot/dts/ti/k3-j721e-beagleboneai64.dtb  $(result_folder)/dtbs/ti
-	cp $(kernel_dir)/arch/arm64/boot/dts/ti/k3-*.dtbo  $(result_folder)/dtbs/overlays
-	@echo "Results were written to $(result_folder)/dtbs"
-	cd -
-## 	Run Build SD
-	build_tools/prepare_sd.sh $(result_folder) | tee $(result_folder)/mybuildtool.log
 #--------------------------------
 # Default make targets for images
 #--------------------------------
