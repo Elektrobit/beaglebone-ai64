@@ -1,1 +1,0 @@
-Elektrobit Corbos Linux built on Ubuntu on Beaglebone
